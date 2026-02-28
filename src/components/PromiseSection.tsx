@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart } from "lucide-react";
 
@@ -19,7 +19,6 @@ const PromiseSection = () => {
   const [response, setResponse] = useState<"yes" | null>(null);
   const [hearts, setHearts] = useState<{ id: number; x: number }[]>([]);
   const [noPosition, setNoPosition] = useState({ x: 0, y: 0 });
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleYes = useCallback(() => {
     setResponse("yes");
@@ -37,20 +36,36 @@ const PromiseSection = () => {
   }, []);
 
   return (
-    <section className="px-4 py-16 md:py-24 text-center relative" ref={containerRef}>
+    <section className="px-4 py-20 md:py-32 text-center relative">
       {hearts.map((h) => (
         <FloatingHeart key={h.id} id={h.id} x={h.x} />
       ))}
 
-      <motion.h2
+      <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="font-serif-display text-2xl md:text-4xl text-foreground mb-10"
+        className="mb-4"
+      >
+        <p className="font-handwritten text-lg text-muted-foreground mb-3">one last thing...</p>
+      </motion.div>
+
+      <motion.h2
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        className="font-serif-display text-3xl md:text-5xl text-foreground mb-4 italic"
       >
         Will you let me make this right?
       </motion.h2>
+
+      <div className="flex items-center justify-center gap-3 mb-12">
+        <div className="w-12 h-px bg-primary/25" />
+        <span className="text-primary/40 text-xs">♡</span>
+        <div className="w-12 h-px bg-primary/25" />
+      </div>
 
       <AnimatePresence mode="wait">
         {response === null ? (
@@ -60,35 +75,42 @@ const PromiseSection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center min-h-[120px]"
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="flex flex-col sm:flex-row gap-6 justify-center items-center min-h-[140px]"
           >
-            <button
+            <motion.button
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.95 }}
               onClick={handleYes}
-              className="btn-yes px-8 py-3 rounded-full font-sans font-medium text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              className="btn-yes px-10 py-4 rounded-full font-sans font-medium text-lg shadow-lg transition-colors duration-300"
             >
-              Yes
-            </button>
+              Yes ♡
+            </motion.button>
             <motion.button
               animate={{ x: noPosition.x, y: noPosition.y }}
               transition={{ type: "spring", stiffness: 300, damping: 15 }}
               onMouseEnter={dodgeNo}
               onTouchStart={dodgeNo}
-              className="btn-wait px-8 py-3 rounded-full font-sans font-medium text-lg transition-colors duration-300"
+              className="btn-wait px-10 py-4 rounded-full font-sans font-medium text-lg transition-colors duration-300"
             >
               No
             </motion.button>
           </motion.div>
         ) : (
-          <motion.p
+          <motion.div
             key="yes-response"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="font-handwritten text-2xl md:text-3xl text-foreground max-w-md mx-auto leading-relaxed"
+            className="space-y-4"
           >
-            Thank you. I promise to be better. I love you. 💛
-          </motion.p>
+            <p className="font-handwritten text-3xl md:text-4xl text-foreground max-w-md mx-auto leading-relaxed">
+              Thank you. I promise to be better.
+            </p>
+            <p className="font-handwritten text-2xl md:text-3xl text-foreground/70">
+              I love you. 💛
+            </p>
+          </motion.div>
         )}
       </AnimatePresence>
     </section>
