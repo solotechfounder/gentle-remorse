@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart } from "lucide-react";
 
@@ -16,8 +16,10 @@ const FloatingHeart = ({ id, x }: { id: number; x: number }) => (
 );
 
 const PromiseSection = () => {
-  const [response, setResponse] = useState<"yes" | "wait" | null>(null);
+  const [response, setResponse] = useState<"yes" | null>(null);
   const [hearts, setHearts] = useState<{ id: number; x: number }[]>([]);
+  const [noPosition, setNoPosition] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleYes = useCallback(() => {
     setResponse("yes");
@@ -28,8 +30,14 @@ const PromiseSection = () => {
     setHearts(newHearts);
   }, []);
 
+  const dodgeNo = useCallback(() => {
+    const x = (Math.random() - 0.5) * 250;
+    const y = (Math.random() - 0.5) * 150;
+    setNoPosition({ x, y });
+  }, []);
+
   return (
-    <section className="px-4 py-16 md:py-24 text-center relative">
+    <section className="px-4 py-16 md:py-24 text-center relative" ref={containerRef}>
       {hearts.map((h) => (
         <FloatingHeart key={h.id} id={h.id} x={h.x} />
       ))}
@@ -53,7 +61,7 @@ const PromiseSection = () => {
             viewport={{ once: true }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center min-h-[120px]"
           >
             <button
               onClick={handleYes}
@@ -61,14 +69,17 @@ const PromiseSection = () => {
             >
               Yes
             </button>
-            <button
-              onClick={() => setResponse("wait")}
-              className="btn-wait px-8 py-3 rounded-full font-sans font-medium text-lg transition-all duration-300 hover:scale-105"
+            <motion.button
+              animate={{ x: noPosition.x, y: noPosition.y }}
+              transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              onMouseEnter={dodgeNo}
+              onTouchStart={dodgeNo}
+              className="btn-wait px-8 py-3 rounded-full font-sans font-medium text-lg transition-colors duration-300"
             >
-              I need some time
-            </button>
+              No
+            </motion.button>
           </motion.div>
-        ) : response === "yes" ? (
+        ) : (
           <motion.p
             key="yes-response"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -77,16 +88,6 @@ const PromiseSection = () => {
             className="font-handwritten text-2xl md:text-3xl text-foreground max-w-md mx-auto leading-relaxed"
           >
             Thank you. I promise to be better. I love you. 💛
-          </motion.p>
-        ) : (
-          <motion.p
-            key="wait-response"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            className="font-handwritten text-2xl md:text-3xl text-muted-foreground max-w-md mx-auto leading-relaxed"
-          >
-            I completely understand. Take all the time you need. I'll be right here when you're ready. 🤍
           </motion.p>
         )}
       </AnimatePresence>
